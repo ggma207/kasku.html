@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f766e">
+<title>KasKu - Uang Kas Kelas</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:#e8efed;color:#1f2937;display:flex;justify-content:center;align-items:center}
+button{font:inherit}
+
+.kasku-app{--pri:#0f766e;--pri-d:#115e59;--pri-l:#ccfbf1;--ok:#16a34a;--okbg:#dcfce7;--warn:#b45309;--warnbg:#fef3c7;--bad:#dc2626;--badbg:#fee2e2;--mut:#6b7280;--line:#e5e7eb;
+  position:relative;width:100%;max-width:420px;height:100vh;height:100dvh;background:#f8faf9;display:flex;flex-direction:column;overflow:hidden}
+@media(min-width:520px){
+  body{padding:20px}
+  .kasku-app{height:min(820px,calc(100vh - 40px));border-radius:28px;box-shadow:0 20px 50px rgba(0,0,0,.18)}
+}
+.screen{flex:1;overflow-y:auto;padding:16px 16px 22px}
+
+/* navigasi bawah */
+.nav{display:flex;background:#fff;border-top:1px solid var(--line)}
+.nav button{flex:1;padding:10px 4px 12px;border:0;background:none;font-size:12px;color:var(--mut);display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer}
+.nav button.on{color:var(--pri);font-weight:700}
+
+/* header */
+.top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+.brand{font-size:22px;font-weight:800;color:var(--pri)}
+.hello{font-size:13px;color:var(--mut)}
+.iconbtn{background:#fff;border:1px solid var(--line);width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:#374151;cursor:pointer}
+.subhead{display:flex;align-items:center;gap:6px;margin-bottom:14px}
+.subhead h2{font-size:18px}
+.back{background:#fff;border:1px solid var(--line);width:36px;height:36px;border-radius:12px;display:grid;place-items:center;color:#374151;cursor:pointer}
+
+/* dashboard */
+.saldo{background:linear-gradient(135deg,var(--pri),#14b8a6);color:#fff;border-radius:20px;padding:20px;box-shadow:0 8px 20px rgba(15,118,110,.28)}
+.saldo .lbl{font-size:13px;opacity:.9}
+.saldo .big{font-size:34px;font-weight:800;letter-spacing:-.5px;margin:4px 0}
+.saldo .sub{font-size:12px;opacity:.85}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:12px 0}
+.mini{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px}
+.mini span{font-size:12px;color:var(--mut);display:block;margin-bottom:2px}
+.mini b{font-size:16px}
+.mini.in b{color:var(--ok)}
+.mini.out b{color:var(--bad)}
+.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-bottom:12px}
+.card-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.card-h b{font-size:14px}
+.link{border:0;background:none;color:var(--pri);font-weight:600;font-size:13px;cursor:pointer}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.row b{color:var(--bad)}
+.empty{color:var(--mut);font-size:13px;padding:10px 0;text-align:center}
+
+/* form */
+label{display:block;font-size:13px;font-weight:600;margin:12px 0 5px;color:#374151}
+label:first-child{margin-top:0}
+input,select{width:100%;padding:12px;border:1.5px solid var(--line);border-radius:12px;font:inherit;background:#fff;color:inherit}
+input:focus,select:focus{outline:none;border-color:var(--pri)}
+.btns{display:flex;flex-direction:column;gap:10px;margin-top:18px}
+.btn{width:100%;padding:13px;border-radius:12px;border:1.5px solid transparent;font-weight:700;letter-spacing:.3px;cursor:pointer}
+.btn.primary{background:var(--pri);color:#fff}
+.btn.primary:active{background:var(--pri-d)}
+.btn.ghost{background:#fff;border-color:var(--line);color:#374151}
+.btn.danger{background:#fff;border-color:#fecaca;color:var(--bad)}
+.btn.sm{padding:10px;font-size:13px;margin-top:10px}
+.saldoinfo{font-size:13px;color:var(--mut);margin-top:12px;background:var(--pri-l);padding:10px 12px;border-radius:10px;color:var(--pri-d)}
+
+/* status */
+.search{display:flex;align-items:center;gap:8px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:0 12px;margin-bottom:12px;color:var(--mut)}
+.search input{border:0;padding:12px 0;background:none}
+.search:focus-within{border-color:var(--pri)}
+.srow{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:8px;cursor:pointer}
+.srow .nm{font-weight:600;font-size:15px}
+.srow .info{font-size:12px;color:var(--mut);margin-top:2px}
+.badge{font-size:11px;font-weight:800;padding:5px 10px;border-radius:999px;letter-spacing:.4px}
+.b-lunas{background:var(--okbg);color:var(--ok)}
+.b-kurang{background:var(--warnbg);color:var(--warn)}
+.b-belum{background:var(--badbg);color:var(--bad)}
+.sticky{position:sticky;bottom:-6px;padding:12px 0 6px;background:linear-gradient(rgba(248,250,249,0),#f8faf9 35%)}
+
+/* rekap */
+.monthnav{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px;margin-bottom:12px}
+.monthnav button{width:36px;height:36px;border:0;background:#f3f4f6;border-radius:10px;cursor:pointer;display:grid;place-items:center;color:#374151}
+.sum{display:grid;grid-template-columns:1fr;gap:8px;margin-bottom:12px}
+.sumrow{display:flex;justify-content:space-between;align-items:center;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+.sumrow span{font-size:13px;color:var(--mut)}
+.sumrow b{font-size:17px}
+.sumrow.in b{color:var(--ok)}
+.sumrow.out b{color:var(--bad)}
+.sumrow.sal{background:var(--pri);border-color:var(--pri)}
+.sumrow.sal span{color:#ccfbf1}
+.sumrow.sal b{color:#fff;font-size:19px}
+.bars{display:flex;gap:8px;height:130px;margin-top:6px}
+.bar{flex:1;display:flex;flex-direction:column;align-items:center;height:100%}
+.bv{font-size:10px;color:var(--mut);height:14px;white-space:nowrap}
+.bcol{flex:1;width:100%;display:flex;align-items:flex-end;background:#f1f5f4;border-radius:8px;overflow:hidden}
+.bcol i{display:block;width:100%;background:var(--pri);border-radius:8px 8px 0 0}
+.bl{font-size:12px;font-weight:600;margin-top:4px;color:#374151}
+.trow{display:flex;align-items:center;gap:8px;padding:9px 0;border-top:1px solid var(--line);font-size:14px}
+.trow .d{color:var(--mut);font-size:12px;width:42px;flex:none}
+.trow .t{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.trow .t small{color:var(--mut);margin-left:4px}
+.trow b.neg{color:var(--bad)}
+.trow b.pos{color:var(--ok)}
+.trow .del{border:0;background:none;color:#9ca3af;cursor:pointer;padding:4px;display:grid;place-items:center}
+.trow .del:hover{color:var(--bad)}
+
+/* login */
+.login{min-height:100%;display:flex;flex-direction:column;justify-content:center;text-align:center;padding:10px 6px}
+.logo{width:76px;height:76px;margin:0 auto 12px;border-radius:24px;background:linear-gradient(135deg,var(--pri),#14b8a6);color:#fff;display:grid;place-items:center;font-weight:800;font-size:24px;box-shadow:0 8px 20px rgba(15,118,110,.3)}
+.login h1{font-size:28px;color:var(--pri)}
+.login p.s{color:var(--mut);font-size:14px;margin:2px 0 22px}
+.login label{text-align:left}
+.login input{text-align:center;font-size:20px;letter-spacing:6px}
+.err{color:var(--bad);font-size:13px;min-height:20px;margin-top:8px}
+.hint{font-size:12px;color:var(--mut);margin-top:14px}
+
+/* modal */
+.overlay{position:absolute;inset:0;background:rgba(17,24,39,.5);display:none;align-items:center;justify-content:center;padding:20px;z-index:10}
+.overlay.show{display:flex}
+.sheet{background:#fff;border-radius:22px;padding:22px;width:100%;max-height:90%;overflow-y:auto}
+.sheet h3{font-size:18px;margin-bottom:8px}
+.sheet.c{text-align:center}
+.sheet .msg{font-size:14px;color:#4b5563;margin-bottom:18px;line-height:1.5}
+.sheet .btn{margin-top:8px}
+.warnic,.okic{width:54px;height:54px;border-radius:50%;display:grid;place-items:center;font-size:28px;font-weight:800;margin:0 auto 10px}
+.warnic{background:var(--warnbg);color:var(--warn)}
+.okic{background:var(--okbg);color:var(--ok)}
+.sec{border-top:1px solid var(--line);padding-top:14px;margin-top:14px}
+.sec:first-of-type{border-top:0;padding-top:0;margin-top:6px}
+.btns2{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.btns2 .btn{margin-top:0;padding:10px;font-size:13px}
+.msglist{max-height:260px;overflow-y:auto;margin:6px 0 10px}
+.msgitem{background:#f8faf9;border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;text-align:left}
+.msgitem b{font-size:13px}
+.msgitem p{font-size:13px;color:#4b5563;margin-top:2px}
+.kv{display:flex;justify-content:space-between;padding:8px 0;border-top:1px solid var(--line);font-size:14px}
+.kv span{color:var(--mut)}
+
+.toast{position:absolute;left:50%;bottom:86px;transform:translateX(-50%) translateY(10px);background:#111827;color:#fff;padding:10px 16px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:.25s;z-index:20;white-space:nowrap;max-width:92%}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div id="kasku" class="kasku-app">
+  <main id="screen" class="screen"></main>
+  <nav id="nav" class="nav"></nav>
+  <div id="overlay" class="overlay"></div>
+  <div id="toast" class="toast"></div>
+</div>
+
+<script>
+/* =====================================================================
+   KasKu - Aplikasi Uang Kas Kelas
+   BAGIAN 1: UTILITAS
+   BAGIAN 2: BACKEND (struktur data, logika, validasi, penyimpanan lokal)
+   BAGIAN 3: FRONTEND (antarmuka & interaksi)
+   ===================================================================== */
+
+/* ---------- BAGIAN 1: UTILITAS ---------- */
+const $ = s => document.querySelector(s);
+const pad = n => String(n).padStart(2, '0');
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmtAngka = n => Math.abs(Math.round(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+const rp = n => 'Rp ' + (n < 0 ? '-' : '') + fmtAngka(n);
+const BLN = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const BLN_FULL = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const iso = d => d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate());
+const parseISO = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const today = () => iso(new Date());
+const addDays = (s, n) => { const d = parseISO(s); d.setDate(d.getDate() + n); return iso(d); };
+const fmtTgl = s => { const d = parseISO(s); return pad(d.getDate()) + ' ' + BLN[d.getMonth()] + ' ' + d.getFullYear(); };
+const fmtPendek = s => { const d = parseISO(s); return pad(d.getDate()) + '/' + pad(d.getMonth() + 1); };
+const singkat = n => n >= 1000 ? (Math.round(n / 100) / 10).toString().replace('.', ',') + 'rb' : String(n);
+function parseJumlah(v) {
+  const t = String(v).trim().replace(/\./g, '').replace(/\s/g, '').replace(',', '.');
+  if (t === '' || !/^-?\d+(\.\d+)?$/.test(t)) return NaN;
+  return Number(t);
+}
+
+/* ---------- BAGIAN 2: BACKEND ---------- */
+/* Tabel: siswa, pembayaran, pengeluaran, pengaturan (sesuai Tahap 2c).
+   Saldo TIDAK disimpan, selalu dihitung: total pemasukan - total pengeluaran. */
+const BE = (function () {
+  const KEY = 'kasku_db_v1';
+  let db = null;
+
+  // hash sederhana untuk PIN (PIN tidak disimpan sebagai teks biasa)
+  function hash(str) {
+    let h1 = 0xdeadbeef, h2 = 0x41c6ce57;
+    const s = 'kasku::' + str;
+    for (let i = 0; i < s.length; i++) {
+      const ch = s.charCodeAt(i);
+      h1 = Math.imul(h1 ^ ch, 2654435761);
+      h2 = Math.imul(h2 ^ ch, 1597334677);
+    }
+    h1 = Math.imul(h1 ^ (h1 >>> 16), 2246822507) ^ Math.imul(h2 ^ (h2 >>> 13), 3266489909);
+    h2 = Math.imul(h2 ^ (h2 >>> 16), 2246822507) ^ Math.imul(h1 ^ (h1 >>> 13), 3266489909);
+    return (4294967296 * (2097151 & h2) + (h1 >>> 0)).toString(16);
+  }
+
+  function kosong() {
+    return {
+      siswa: [], pembayaran: [], pengeluaran: [],
+      pengaturan: { tarif_per_minggu: 5000, tanggal_mulai: addDays(today(), -14), pin_bendahara: hash('1234') }
+    };
+  }
+
+  function contoh() {
+    const d = kosong();
+    const t0 = d.pengaturan.tanggal_mulai;           // sekarang = minggu ke-3
+    ['Andi','Budi','Citra','Dewi','Eko','Fani','Gita','Hadi'].forEach((n, i) =>
+      d.siswa.push({ id_siswa: i + 1, nama_siswa: n, no_absen: i + 1, aktif: true }));
+    let id = 1;
+    const bayar = (s, w, j) => d.pembayaran.push({ id_pembayaran: id++, id_siswa: s, minggu_ke: w, jumlah: j, tanggal_bayar: addDays(t0, (w - 1) * 7) });
+    [1, 2, 6, 8].forEach(s => { bayar(s, 1, 5000); bayar(s, 2, 5000); bayar(s, 3, 5000); }); // Andi, Budi, Fani, Hadi: lunas
+    bayar(4, 1, 5000); bayar(4, 2, 2000);                                                    // Dewi: kurang
+    bayar(7, 1, 5000); bayar(7, 2, 5000);                                                    // Gita: kurang
+    d.pengeluaran.push({ id_pengeluaran: 1, keperluan: 'Beli spidol & penghapus', jumlah: 25000, tanggal: addDays(t0, 5) });
+    d.pengeluaran.push({ id_pengeluaran: 2, keperluan: 'Fotokopi soal', jumlah: 15000, tanggal: addDays(t0, 9) });
+    return d;
+  }
+
+  function valid(o) {
+    return o && Array.isArray(o.siswa) && Array.isArray(o.pembayaran) && Array.isArray(o.pengeluaran) &&
+      o.pengaturan && typeof o.pengaturan.tarif_per_minggu === 'number' &&
+      typeof o.pengaturan.tanggal_mulai === 'string' && typeof o.pengaturan.pin_bendahara === 'string';
+  }
+  function simpan() { try { localStorage.setItem(KEY, JSON.stringify(db)); } catch (e) {} }
+  function muat() {
+    try { db = JSON.parse(localStorage.getItem(KEY)); } catch (e) { db = null; }
+    if (!valid(db)) { db = contoh(); simpan(); }
+  }
+  const nextId = (arr, k) => arr.reduce((m, x) => Math.max(m, x[k]), 0) + 1;
+
+  /* --- data dasar --- */
+  const tarif = () => db.pengaturan.tarif_per_minggu;
+  const mulai = () => db.pengaturan.tanggal_mulai;
+  function mingguBerjalan() {
+    const hari = Math.round((parseISO(today()) - parseISO(mulai())) / 86400000);
+    return Math.max(1, Math.floor(hari / 7) + 1);
+  }
+  const siswaAktif = () => db.siswa.filter(s => s.aktif).sort((a, b) => a.no_absen - b.no_absen);
+  const cariSiswa = id => db.siswa.find(s => s.id_siswa === Number(id));
+  const namaSiswa = id => { const s = cariSiswa(id); return s ? s.nama_siswa : '(siswa dihapus)'; };
+
+  /* --- fungsi hitung (hitung_pemasukan, hitung_pengeluaran, hitung_saldo) --- */
+  const hitungPemasukan = sd => db.pembayaran.filter(p => !sd || p.tanggal_bayar <= sd).reduce((a, p) => a + p.jumlah, 0);
+  const hitungPengeluaran = sd => db.pengeluaran.filter(p => !sd || p.tanggal <= sd).reduce((a, p) => a + p.jumlah, 0);
+  const hitungSaldo = sd => hitungPemasukan(sd) - hitungPengeluaran(sd);
+
+  /* --- status pembayaran: Lunas / Kurang / Belum --- */
+  const totalBayar = id => db.pembayaran.filter(p => p.id_siswa === Number(id)).reduce((a, p) => a + p.jumlah, 0);
+  function statusSiswa(id) {
+    const total = totalBayar(id), tagihan = tarif() * mingguBerjalan();
+    const status = total >= tagihan ? 'Lunas' : (total > 0 ? 'Kurang' : 'Belum');
+    return { total, tagihan, kurang: Math.max(0, tagihan - total), status };
+  }
+  function daftarStatus() {
+    return siswaAktif().map(s => Object.assign({ id: s.id_siswa, nama: s.nama_siswa, absen: s.no_absen }, statusSiswa(s.id_siswa)));
+  }
+  function daftarPengingat() {
+    return daftarStatus().filter(x => x.status !== 'Lunas').map(x =>
+      Object.assign(x, { pesan: 'Halo ' + x.nama + ', kas minggu ini belum lunas. Kurang ' + rp(x.kurang) + '.' }));
+  }
+
+  /* --- catat pembayaran (dengan validasi) --- */
+  function catatPembayaran(o) {
+    if (!o.id_siswa) return { ok: false, pesan: 'Silakan pilih nama siswa terlebih dahulu.', fokus: '#fSiswa' };
+    const s = cariSiswa(o.id_siswa);
+    if (!s || !s.aktif) return { ok: false, pesan: 'Nama siswa belum terdaftar.', fokus: '#fSiswa' };
+    if (!Number.isInteger(o.jumlah) || o.jumlah <= 0)
+      return { ok: false, pesan: 'Jumlah pembayaran tidak valid. Masukkan nominal lebih dari Rp 0.', fokus: '#fJumlah' };
+    if (!Number.isInteger(o.minggu_ke) || o.minggu_ke < 1)
+      return { ok: false, pesan: 'Minggu ke- harus berupa angka 1 atau lebih.', fokus: '#fMinggu' };
+    if (!o.tanggal) return { ok: false, pesan: 'Tanggal pembayaran wajib diisi.', fokus: '#fTgl' };
+    db.pembayaran.push({ id_pembayaran: nextId(db.pembayaran, 'id_pembayaran'), id_siswa: s.id_siswa, minggu_ke: o.minggu_ke, jumlah: o.jumlah, tanggal_bayar: o.tanggal });
+    simpan();
+    return { ok: true, pesan: 'Pembayaran berhasil dicatat' };
+  }
+
+  /* --- catat pengeluaran (tidak boleh melebihi saldo) --- */
+  function catatPengeluaran(o) {
+    const ket = (o.keperluan || '').trim();
+    if (!ket) return { ok: false, pesan: 'Isi keperluan pengeluaran agar laporan jelas.', fokus: '#kKeperluan' };
+    if (!Number.isInteger(o.jumlah) || o.jumlah <= 0)
+      return { ok: false, pesan: 'Jumlah pengeluaran tidak valid. Masukkan nominal lebih dari Rp 0.', fokus: '#kJumlah' };
+    const saldo = hitungSaldo();
+    if (o.jumlah > saldo)
+      return { ok: false, saldo: true, pesan: 'Saldo kas tidak cukup untuk pengeluaran ini. Saldo saat ini ' + rp(saldo) + '.', fokus: '#kJumlah' };
+    if (!o.tanggal) return { ok: false, pesan: 'Tanggal pengeluaran wajib diisi.', fokus: '#kTgl' };
+    db.pengeluaran.push({ id_pengeluaran: nextId(db.pengeluaran, 'id_pengeluaran'), keperluan: ket, jumlah: o.jumlah, tanggal: o.tanggal });
+    simpan();
+    return { ok: true, pesan: 'Pengeluaran berhasil dicatat' };
+  }
+
+  /* --- hapus transaksi (setelah konfirmasi di antarmuka) --- */
+  function hapusPembayaran(id) {
+    const p = db.pembayaran.find(x => x.id_pembayaran === Number(id));
+    if (!p) return { ok: false, pesan: 'Transaksi tidak ditemukan.' };
+    if (hitungSaldo() - p.jumlah < 0)
+      return { ok: false, pesan: 'Transaksi tidak dapat dihapus karena saldo kas akan menjadi minus. Hapus dulu pengeluaran terkait.' };
+    db.pembayaran = db.pembayaran.filter(x => x !== p); simpan();
+    return { ok: true };
+  }
+  function hapusPengeluaran(id) {
+    db.pengeluaran = db.pengeluaran.filter(x => x.id_pengeluaran !== Number(id)); simpan();
+    return { ok: true };
+  }
+
+  /* --- data siswa --- */
+  function tambahSiswa(nama, absen) {
+    nama = (nama || '').trim();
+    if (!nama) return { ok: false, pesan: 'Nama siswa tidak boleh kosong.' };
+    if (db.siswa.some(s => s.aktif && s.nama_siswa.toLowerCase() === nama.toLowerCase()))
+      return { ok: false, pesan: 'Nama siswa sudah terdaftar.' };
+    if (!Number.isInteger(absen) || absen < 1) return { ok: false, pesan: 'No. absen harus berupa angka 1 atau lebih.' };
+    db.siswa.push({ id_siswa: nextId(db.siswa, 'id_siswa'), nama_siswa: nama, no_absen: absen, aktif: true });
+    simpan();
+    return { ok: true, pesan: 'Siswa berhasil ditambahkan' };
+  }
+  function hapusSiswa(id) { const s = cariSiswa(id); if (s) { s.aktif = false; simpan(); } return { ok: true }; }
+
+  /* --- login & pengaturan --- */
+  const cekPin = pin => hash(String(pin)) === db.pengaturan.pin_bendahara;
+  function gantiPin(pin) {
+    if (!/^\d{4,8}$/.test(pin)) return { ok: false, pesan: 'PIN harus berupa 4 sampai 8 angka.' };
+    db.pengaturan.pin_bendahara = hash(pin); simpan();
+    return { ok: true, pesan: 'PIN berhasil diubah' };
+  }
+  function setPengaturan(t, tgl) {
+    if (!Number.isInteger(t) || t <= 0) return { ok: false, pesan: 'Iuran per minggu harus lebih dari Rp 0.' };
+    if (!tgl) return { ok: false, pesan: 'Tanggal mulai iuran wajib diisi.' };
+    db.pengaturan.tarif_per_minggu = t; db.pengaturan.tanggal_mulai = tgl; simpan();
+    return { ok: true, pesan: 'Pengaturan disimpan' };
+  }
+  function muatContoh() { const p = db.pengaturan; db = contoh(); db.pengaturan.pin_bendahara = p.pin_bendahara; simpan(); }
+  function kosongkan() { const p = db.pengaturan; db = kosong(); db.pengaturan = p; simpan(); }
+  function impor(o) { if (!valid(o)) return false; db = o; simpan(); return true; }
+  const ekspor = () => JSON.stringify(db, null, 2);
+
+  muat();
+  return { data: () => db, tarif, mulai, mingguBerjalan, siswaAktif, cariSiswa, namaSiswa,
+    hitungPemasukan, hitungPengeluaran, hitungSaldo, totalBayar, statusSiswa, daftarStatus, daftarPengingat,
+    catatPembayaran, catatPengeluaran, hapusPembayaran, hapusPengeluaran, tambahSiswa, hapusSiswa,
+    cekPin, gantiPin, setPengaturan, muatContoh, kosongkan, impor, ekspor };
+})();
+
+/* ---------- BAGIAN 3: FRONTEND ---------- */
+const ICONS = {
+  home: '<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
+  in: '<circle cx="12" cy="12" r="9"/><path d="M12 8v8M8 12h8"/>',
+  out: '<circle cx="12" cy="12" r="9"/><path d="M8 12h8"/>',
+  chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  users: '<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><path d="M16 5a3.5 3.5 0 010 7M18 14c2.2.6 3.5 2.6 3.5 6"/>',
+  gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  back: '<path d="M15 5l-7 7 7 7"/>',
+  next: '<path d="M9 5l7 7-7 7"/>',
+  trash: '<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v6M14 11v6"/>',
+  search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>'
+};
+const ic = (n, s = 22) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[n]}</svg>`;
+
+const now0 = new Date();
+const S = { role: null, view: 'login', rekap: { y: now0.getFullYear(), m: now0.getMonth() }, q: '', afterClose: null, confirmCb: null };
+try { const r = sessionStorage.getItem('kasku_role'); if (r === 'bendahara' || r === 'tamu') { S.role = r; S.view = 'dash'; } } catch (e) {}
+const persist = () => { try { S.role ? sessionStorage.setItem('kasku_role', S.role) : sessionStorage.removeItem('kasku_role'); } catch (e) {} };
+const isB = () => S.role === 'bendahara';
+
+/* --- komponen kecil --- */
+const sub = judul => `<div class="subhead"><button class="back" data-act="go" data-v="dash" aria-label="Kembali">${ic('back', 20)}</button><h2>${judul}</h2></div>`;
+const badge = st => `<span class="badge b-${st.toLowerCase()}">${st.toUpperCase()}</span>`;
+
+/* --- layar 0: login --- */
+function vLogin() {
+  return `<div class="login">
+    <div class="logo">Rp</div>
+    <h1>KasKu</h1>
+    <p class="s">Aplikasi uang kas kelas</p>
+    <label for="pin">PIN Bendahara</label>
+    <input id="pin" type="password" inputmode="numeric" maxlength="8" placeholder="••••" autocomplete="off">
+    <div class="err" id="pinErr"></div>
+    <div class="btns"><button class="btn primary" data-act="login">MASUK</button>
+    <button class="btn ghost" data-act="guest">Lihat saja (wali kelas / siswa)</button></div>
+    <p class="hint">PIN awal: 1234 (bisa diganti di Pengaturan)</p>
+  </div>`;
+}
+
+/* --- layar 1: dashboard --- */
+function vDash() {
+  const blm = BE.daftarPengingat(), top = blm.slice(0, 3);
+  const list = top.length
+    ? top.map(x => `<div class="row"><span>${esc(x.nama)}</span><b>${rp(x.kurang)}</b></div>`).join('')
+    : '<div class="empty">Semua siswa sudah lunas minggu ini 🎉</div>';
+  return `<div class="top"><div><div class="brand">KasKu</div><div class="hello">Halo, ${isB() ? 'Bendahara' : 'Tamu'}</div></div>
+    <button class="iconbtn" data-act="settings" aria-label="Pengaturan">${ic('gear', 20)}</button></div>
+    <div class="saldo"><div class="lbl">Saldo Kas</div><div class="big">${rp(BE.hitungSaldo())}</div>
+      <div class="sub">Minggu ke-${BE.mingguBerjalan()} · Iuran ${rp(BE.tarif())}/minggu</div></div>
+    <div class="two">
+      <div class="mini in"><span>Pemasukan</span><b>${rp(BE.hitungPemasukan())}</b></div>
+      <div class="mini out"><span>Pengeluaran</span><b>${rp(BE.hitungPengeluaran())}</b></div>
+    </div>
+    <div class="card"><div class="card-h"><b>Belum bayar minggu ini (${blm.length})</b>
+      <button class="link" data-act="go" data-v="status">Lihat semua</button></div>${list}</div>`;
+}
+
+/* --- layar 2: form catat pembayaran --- */
+function vBayar() {
+  const opts = BE.siswaAktif().map(s => `<option value="${s.id_siswa}">${s.no_absen}. ${esc(s.nama_siswa)}</option>`).join('');
+  return `${sub('Catat Pembayaran')}
+    <div class="card">
+      <label for="fSiswa">Nama Siswa</label>
+      <select id="fSiswa"><option value="">Pilih nama siswa</option>${opts}</select>
+      <label for="fMinggu">Minggu ke-</label>
+      <input id="fMinggu" type="number" min="1" value="${BE.mingguBerjalan()}">
+      <label for="fJumlah">Jumlah (Rp)</label>
+      <input id="fJumlah" type="text" inputmode="numeric" value="${fmtAngka(BE.tarif())}">
+      <label for="fTgl">Tanggal</label>
+      <input id="fTgl" type="date" value="${today()}">
+      <div class="btns"><button class="btn primary" data-act="simpanBayar">SIMPAN</button>
+      <button class="btn ghost" data-act="go" data-v="dash">BATAL</button></div>
+    </div>`;
+}
+
+/* --- layar 4: form catat pengeluaran --- */
+function vKeluar() {
+  return `${sub('Catat Pengeluaran')}
+    <div class="card">
+      <label for="kKeperluan">Keperluan</label>
+      <input id="kKeperluan" type="text" placeholder="Contoh: Beli spidol & penghapus" maxlength="80">
+      <label for="kJumlah">Jumlah (Rp)</label>
+      <input id="kJumlah" type="text" inputmode="numeric" placeholder="25.000">
+      <label for="kTgl">Tanggal</label>
+      <input id="kTgl" type="date" value="${today()}">
+      <div class="saldoinfo">Saldo saat ini: <b>${rp(BE.hitungSaldo())}</b></div>
+      <div class="btns"><button class="btn primary" data-act="simpanKeluar">SIMPAN</button>
+      <button class="btn ghost" data-act="go" data-v="dash">BATAL</button></div>
+    </div>`;
+}
+
+/* --- layar 3: status pembayaran siswa --- */
+function listStatus() {
+  const q = S.q.trim().toLowerCase();
+  const data = BE.daftarStatus().filter(x => !q || x.nama.toLowerCase().includes(q));
+  if (!data.length) return '<div class="empty">Siswa tidak ditemukan.</div>';
+  return data.map(x => `<div class="srow" data-act="siswa" data-id="${x.id}">
+      <div><div class="nm">${esc(x.nama)}</div>
+      <div class="info">${x.status === 'Lunas' ? 'Total bayar ' + rp(x.total) : 'Kurang ' + rp(x.kurang)}</div></div>
+      ${badge(x.status)}</div>`).join('');
+}
+function vStatus() {
+  const n = BE.daftarPengingat().length;
+  return `${sub('Status Pembayaran')}
+    <div class="search">${ic('search', 18)}<input id="q" placeholder="Cari nama siswa..." value="${esc(S.q)}"></div>
+    <div id="listStatus">${listStatus()}</div>
+    ${isB() ? `<button class="btn ghost sm" data-act="tambahSiswa">+ Tambah siswa</button>
+    <div class="sticky"><button class="btn primary" data-act="pengingat">KIRIM PENGINGAT (<span id="nPeng">${n}</span>)</button></div>` : ''}`;
+}
+
+/* --- layar 5: rekap pemasukan & pengeluaran --- */
+function vRekap() {
+  const { y, m } = S.rekap, D = BE.data();
+  const awal = `${y}-${pad(m + 1)}-01`, hari = new Date(y, m + 1, 0).getDate(), akhir = `${y}-${pad(m + 1)}-${pad(hari)}`;
+  const bln = t => t >= awal && t <= akhir;
+  const urut = (a, k) => a.slice().sort((p, q) => (q[k] > p[k] ? 1 : q[k] < p[k] ? -1 : 0));
+  const pay = D.pembayaran.filter(p => bln(p.tanggal_bayar)), exp = D.pengeluaran.filter(p => bln(p.tanggal));
+  const tin = pay.reduce((a, p) => a + p.jumlah, 0), tout = exp.reduce((a, p) => a + p.jumlah, 0);
+  const minggu = [0, 0, 0, 0, 0];
+  pay.forEach(p => { minggu[Math.min(4, Math.ceil(parseISO(p.tanggal_bayar).getDate() / 7) - 1)] += p.jumlah; });
+  const mx = Math.max(...minggu, 1);
+  const bars = minggu.map((v, i) => `<div class="bar"><div class="bv">${v ? singkat(v) : ''}</div>
+    <div class="bcol"><i style="height:${Math.round(v / mx * 100)}%"></i></div><div class="bl">M${i + 1}</div></div>`).join('');
+  const del = (act, id) => isB() ? `<button class="del" data-act="${act}" data-id="${id}" aria-label="Hapus">${ic('trash', 17)}</button>` : '';
+  const lExp = urut(exp, 'tanggal').slice(0, 8).map(p => `<div class="trow"><span class="d">${fmtPendek(p.tanggal)}</span>
+    <span class="t">${esc(p.keperluan)}</span><b class="neg">-${fmtAngka(p.jumlah)}</b>${del('delKeluar', p.id_pengeluaran)}</div>`).join('')
+    || '<div class="empty">Belum ada pengeluaran bulan ini.</div>';
+  const lPay = urut(pay, 'tanggal_bayar').slice(0, 8).map(p => `<div class="trow"><span class="d">${fmtPendek(p.tanggal_bayar)}</span>
+    <span class="t">${esc(BE.namaSiswa(p.id_siswa))}<small>M${p.minggu_ke}</small></span><b class="pos">+${fmtAngka(p.jumlah)}</b>${del('delBayar', p.id_pembayaran)}</div>`).join('')
+    || '<div class="empty">Belum ada pembayaran bulan ini.</div>';
+  return `${sub('Rekap Kas - ' + BLN_FULL[m])}
+    <div class="monthnav"><button data-act="rekapPrev" aria-label="Bulan sebelumnya">${ic('back', 18)}</button>
+      <b>${BLN_FULL[m]} ${y}</b><button data-act="rekapNext" aria-label="Bulan berikutnya">${ic('next', 18)}</button></div>
+    <div class="sum">
+      <div class="sumrow in"><span>Total Pemasukan</span><b>${rp(tin)}</b></div>
+      <div class="sumrow out"><span>Total Pengeluaran</span><b>${rp(tout)}</b></div>
+      <div class="sumrow sal"><span>Saldo Akhir</span><b>${rp(BE.hitungSaldo(akhir))}</b></div>
+    </div>
+    <div class="card"><div class="card-h"><b>Pemasukan per minggu</b></div><div class="bars">${bars}</div></div>
+    <div class="card"><div class="card-h"><b>Pengeluaran terakhir</b></div>${lExp}</div>
+    <div class="card"><div class="card-h"><b>Pembayaran terakhir</b></div>${lPay}</div>`;
+}
+
+/* --- navigasi bawah --- */
+function navHtml() {
+  const it = isB()
+    ? [['dash', 'home', 'Beranda'], ['bayar', 'in', 'Bayar'], ['keluar', 'out', 'Keluar'], ['rekap', 'chart', 'Rekap']]
+    : [['dash', 'home', 'Beranda'], ['status', 'users', 'Status'], ['rekap', 'chart', 'Rekap']];
+  return it.map(([v, i, l]) => `<button class="${S.view === v ? 'on' : ''}" data-act="go" data-v="${v}">${ic(i)}<span>${l}</span></button>`).join('');
+}
+
+function render() {
+  if (!S.role) S.view = 'login';
+  if (!isB() && (S.view === 'bayar' || S.view === 'keluar')) S.view = 'dash';
+  const V = { login: vLogin, dash: vDash, bayar: vBayar, keluar: vKeluar, status: vStatus, rekap: vRekap };
+  $('#screen').innerHTML = V[S.view]();
+  $('#nav').innerHTML = S.role ? navHtml() : '';
+  $('#nav').style.display = S.role ? 'flex' : 'none';
+  $('#screen').scrollTop = 0;
+}
+
+/* --- modal, peringatan, konfirmasi, toast --- */
+function modal(html, cls) { const o = $('#overlay'); o.innerHTML = `<div class="sheet ${cls || ''}" role="dialog">${html}</div>`; o.classList.add('show'); }
+function closeModal() { const o = $('#overlay'); o.classList.remove('show'); o.innerHTML = ''; const f = S.afterClose; S.afterClose = null; if (f) f(); }
+function alertBox(msg, tombol, after) {
+  modal(`<div class="warnic">!</div><h3>Perhatian</h3><p class="msg">${esc(msg)}</p>
+    <button class="btn primary" data-act="closeModal">${esc(tombol || 'Tutup')}</button>`, 'c');
+  S.afterClose = after || null;
+}
+function confirmBox(msg, yes) {
+  S.confirmCb = yes;
+  modal(`<div class="warnic">?</div><h3>Konfirmasi</h3><p class="msg">${esc(msg)}</p>
+    <button class="btn primary" data-act="confirmYes">YA, HAPUS</button><button class="btn ghost" data-act="closeModal">BATAL</button>`, 'c');
+}
+let toastT;
+function toast(msg) { const t = $('#toast'); t.textContent = msg; t.classList.add('show'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2200); }
+const fokus = sel => () => { const e = $(sel); if (e) { e.focus(); if (e.select && e.type === 'text') e.select(); } };
+
+/* --- modal khusus --- */
+function mSettings() {
+  const P = BE.data().pengaturan;
+  modal(`<h3>Pengaturan</h3>
+    ${isB() ? `
+    <div class="sec"><label for="sTarif">Iuran per minggu (Rp)</label>
+      <input id="sTarif" type="text" inputmode="numeric" value="${fmtAngka(P.tarif_per_minggu)}">
+      <label for="sMulai">Tanggal mulai iuran (minggu ke-1)</label>
+      <input id="sMulai" type="date" value="${P.tanggal_mulai}">
+      <button class="btn primary sm" data-act="simpanSet">Simpan pengaturan</button></div>
+    <div class="sec"><label for="sPin">Ganti PIN bendahara</label>
+      <input id="sPin" type="password" inputmode="numeric" maxlength="8" placeholder="PIN baru (4-8 angka)">
+      <button class="btn ghost sm" data-act="gantiPin">Ubah PIN</button></div>
+    <div class="sec"><label>Cadangan &amp; data</label>
+      <div class="btns2"><button class="btn ghost" data-act="ekspor">Ekspor cadangan</button>
+      <button class="btn ghost" data-act="pilihImpor">Impor cadangan</button></div>
+      <input type="file" id="fImpor" accept=".json,application/json" hidden>
+      <div class="btns2" style="margin-top:8px"><button class="btn ghost" data-act="demoData">Muat data contoh</button>
+      <button class="btn danger" data-act="resetData">Hapus semua data</button></div></div>` : ''}
+    <div class="sec"><button class="btn ghost" data-act="logout">Keluar</button>
+    <button class="btn primary" data-act="closeModal">Tutup</button></div>`);
+}
+function mPengingat() {
+  const list = BE.daftarPengingat();
+  if (!list.length) return modal(`<div class="okic">✓</div><h3>Semua sudah lunas</h3><p class="msg">Tidak ada siswa yang perlu diingatkan.</p>
+    <button class="btn primary" data-act="closeModal">Tutup</button>`, 'c');
+  modal(`<h3>Daftar Pengingat (${list.length})</h3>
+    <div class="msglist">${list.map(x => `<div class="msgitem"><b>${esc(x.nama)}</b><p>${esc(x.pesan)}</p></div>`).join('')}</div>
+    <button class="btn primary" data-act="salin">Salin semua pesan</button><button class="btn ghost" data-act="closeModal">Tutup</button>`);
+}
+function mSiswa(id) {
+  const s = BE.cariSiswa(id); if (!s) return;
+  const st = BE.statusSiswa(id);
+  const riwayat = BE.data().pembayaran.filter(p => p.id_siswa === s.id_siswa).sort((a, b) => a.minggu_ke - b.minggu_ke || (a.tanggal_bayar > b.tanggal_bayar ? 1 : -1));
+  modal(`<h3>${esc(s.nama_siswa)} <small style="color:var(--mut);font-weight:500">No. ${s.no_absen}</small></h3>
+    <div class="kv"><span>Status</span>${badge(st.status)}</div>
+    <div class="kv"><span>Total dibayar</span><b>${rp(st.total)}</b></div>
+    <div class="kv"><span>Tagihan (minggu ke-${BE.mingguBerjalan()})</span><b>${rp(st.tagihan)}</b></div>
+    <div class="kv"><span>Kekurangan</span><b style="color:${st.kurang ? 'var(--bad)' : 'var(--ok)'}">${rp(st.kurang)}</b></div>
+    <div class="kv"><span>Riwayat</span><span style="text-align:right">${riwayat.length ? riwayat.map(p => 'M' + p.minggu_ke + ': ' + fmtAngka(p.jumlah)).join(' · ') : 'Belum ada'}</span></div>
+    <div style="margin-top:12px">${isB() ? `<button class="btn danger sm" data-act="hapusSiswa" data-id="${s.id_siswa}">Hapus dari daftar kelas</button>` : ''}
+    <button class="btn primary" data-act="closeModal">Tutup</button></div>`);
+}
+function mTambahSiswa() {
+  const next = BE.data().siswa.filter(s => s.aktif).reduce((m, s) => Math.max(m, s.no_absen), 0) + 1;
+  modal(`<h3>Tambah Siswa</h3>
+    <label for="tNama">Nama siswa</label><input id="tNama" type="text" maxlength="40" placeholder="Nama lengkap">
+    <label for="tAbsen">No. absen</label><input id="tAbsen" type="number" min="1" value="${next}">
+    <div class="btns"><button class="btn primary" data-act="simpanSiswa">SIMPAN</button><button class="btn ghost" data-act="closeModal">BATAL</button></div>`);
+  setTimeout(fokus('#tNama'), 30);
+}
+
+/* --- aksi tombol --- */
+const ACT = {
+  closeModal,
+  go(el) { S.view = el.dataset.v; closeModal(); render(); },
+  login() {
+    const v = $('#pin').value.trim(), err = $('#pinErr');
+    if (!v) { err.textContent = 'Masukkan PIN terlebih dahulu.'; return; }
+    if (!BE.cekPin(v)) { err.textContent = 'PIN salah. Silakan coba lagi.'; $('#pin').value = ''; $('#pin').focus(); return; }
+    S.role = 'bendahara'; S.view = 'dash'; persist(); render();
+  },
+  guest() { S.role = 'tamu'; S.view = 'dash'; persist(); render(); },
+  logout() { S.role = null; S.view = 'login'; persist(); closeModal(); render(); },
+  settings() { mSettings(); },
+
+  simpanBayar() {
+    const r = BE.catatPembayaran({ id_siswa: $('#fSiswa').value, minggu_ke: Number($('#fMinggu').value), jumlah: parseJumlah($('#fJumlah').value), tanggal: $('#fTgl').value });
+    if (!r.ok) return alertBox(r.pesan, 'Tutup', fokus(r.fokus));
+    toast(r.pesan); S.view = 'dash'; render();
+  },
+  simpanKeluar() {
+    const r = BE.catatPengeluaran({ keperluan: $('#kKeperluan').value, jumlah: parseJumlah($('#kJumlah').value), tanggal: $('#kTgl').value });
+    if (!r.ok) return alertBox(r.pesan, r.saldo ? 'Ubah Jumlah' : 'Tutup', fokus(r.fokus));
+    toast(r.pesan); S.view = 'dash'; render();
+  },
+
+  siswa(el) { mSiswa(el.dataset.id); },
+  tambahSiswa() { mTambahSiswa(); },
+  simpanSiswa() {
+    const r = BE.tambahSiswa($('#tNama').value, Number($('#tAbsen').value));
+    if (!r.ok) return alertBox(r.pesan, 'Tutup', () => { mTambahSiswa(); });
+    closeModal(); toast(r.pesan); render();
+  },
+  hapusSiswa(el) {
+    const id = el.dataset.id;
+    confirmBox('Hapus siswa ini dari daftar kelas? Riwayat pembayarannya tetap tercatat di rekap.', () => { BE.hapusSiswa(id); toast('Siswa dihapus dari daftar'); render(); });
+  },
+  pengingat() { mPengingat(); },
+  salin() {
+    const teks = BE.daftarPengingat().map(x => x.pesan).join('\n');
+    const ok = () => toast('Pesan pengingat disalin');
+    const fallback = () => { const t = document.createElement('textarea'); t.value = teks; document.body.appendChild(t); t.select(); try { document.execCommand('copy'); ok(); } catch (e) { toast('Gagal menyalin'); } t.remove(); };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(teks).then(ok, fallback); else fallback();
+  },
+
+  rekapPrev() { const r = S.rekap; r.m--; if (r.m < 0) { r.m = 11; r.y--; } render(); },
+  rekapNext() { const r = S.rekap; r.m++; if (r.m > 11) { r.m = 0; r.y++; } render(); },
+  delBayar(el) {
+    const id = el.dataset.id;
+    confirmBox('Yakin ingin menghapus transaksi ini?', () => { const r = BE.hapusPembayaran(id); if (!r.ok) return alertBox(r.pesan); toast('Transaksi dihapus'); render(); });
+  },
+  delKeluar(el) {
+    const id = el.dataset.id;
+    confirmBox('Yakin ingin menghapus transaksi ini?', () => { BE.hapusPengeluaran(id); toast('Transaksi dihapus'); render(); });
+  },
+  confirmYes() { const cb = S.confirmCb; S.confirmCb = null; $('#overlay').classList.remove('show'); $('#overlay').innerHTML = ''; if (cb) cb(); },
+
+  simpanSet() {
+    const r = BE.setPengaturan(parseJumlah($('#sTarif').value), $('#sMulai').value);
+    if (!r.ok) return alertBox(r.pesan, 'Tutup', mSettings);
+    closeModal(); toast(r.pesan); render();
+  },
+  gantiPin() {
+    const r = BE.gantiPin($('#sPin').value.trim());
+    if (!r.ok) return alertBox(r.pesan, 'Tutup', mSettings);
+    closeModal(); toast(r.pesan);
+  },
+  ekspor() {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([BE.ekspor()], { type: 'application/json' }));
+    a.download = 'kasku-cadangan-' + today() + '.json';
+    document.body.appendChild(a); a.click(); a.remove(); toast('Cadangan diunduh');
+  },
+  pilihImpor() { $('#fImpor').click(); },
+  demoData() { confirmBox('Ganti semua data dengan data contoh?', () => { BE.muatContoh(); toast('Data contoh dimuat'); render(); }); },
+  resetData() { confirmBox('Hapus SEMUA data siswa dan transaksi? Tindakan ini tidak bisa dibatalkan.', () => { BE.kosongkan(); toast('Semua data dihapus'); render(); }); }
+};
+
+document.addEventListener('click', e => {
+  if (e.target === $('#overlay')) { closeModal(); return; }
+  const el = e.target.closest('[data-act]');
+  if (el && ACT[el.dataset.act]) ACT[el.dataset.act](el);
+});
+document.addEventListener('input', e => {
+  if (e.target.id === 'q') { S.q = e.target.value; $('#listStatus').innerHTML = listStatus(); }
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.id === 'pin') ACT.login();
+  if (e.key === 'Escape' && $('#overlay').classList.contains('show')) closeModal();
+});
+document.addEventListener('change', e => {
+  if (e.target.id !== 'fImpor') return;
+  const f = e.target.files[0]; if (!f) return;
+  const rd = new FileReader();
+  rd.onload = () => {
+    try {
+      if (BE.impor(JSON.parse(rd.result))) { closeModal(); toast('Data berhasil diimpor'); render(); }
+      else alertBox('File cadangan tidak valid.');
+    } catch (err) { alertBox('File cadangan tidak valid.'); }
+  };
+  rd.readAsText(f);
+});
+
+render();
+</script>
+</body>
+</html>
